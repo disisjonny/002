@@ -435,6 +435,11 @@ class MainWindow(QMainWindow):
         row = self.db.get_student(student_id)
         if not row:
             return
+
+        # Reset pending upload state so an old unsaved file path is never reused
+        # when opening another student in edit mode.
+        self.current_photo_source = ""
+
         self.editing_student_id = student_id
         self.set_page(1)
         self.first_name.setText(row["first_name"] or "")
@@ -459,6 +464,10 @@ class MainWindow(QMainWindow):
         if row["photo_path"] and Path(row["photo_path"]).exists():
             pix = QPixmap(row["photo_path"]).scaled(120, 120, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.photo_preview.setPixmap(pix)
+            self.photo_preview.setText("")
+        else:
+            self.photo_preview.setPixmap(QPixmap())
+            self.photo_preview.setText("No photo")
 
     def delete_selected_student(self) -> None:
         student_id = self.selected_student_id()
